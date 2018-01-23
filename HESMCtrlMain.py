@@ -8,7 +8,7 @@
 from HESMCtrl.Measurement import *
 from HESMCtrl.Evaluation import *
 
-MODE = 'plot'  		# measure, plot
+MODE = 'measure'  		# measure, plot
 
 ms = get_measurement_settings()
 if MODE == 'measure':

@@ -94,9 +94,12 @@ def calculate_hysteresis(data,ms,filename):
 	print('PR: (%f +- %f) mC/m2'%(abs(PR)*1000,abs(PR_error)*1000))
 	#print('Vdiff: %f V'%(data.Vdiff.max()))
 	
+	# save data and results
 	data.to_csv('Data/'+filename+'/'+filename+'_data.txt')
-	data.to_csv('Data/'+filename+'/'+filename+'_results.txt')
 	data.to_pickle('Data/'+filename+'/'+filename+'_data.pd')
+	
+	result.to_csv('Data/'+filename+'/'+filename+'_results.txt')
+	
 	return data
 
 def plot_data(data,ms,filename,measure=True):
