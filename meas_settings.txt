@@ -1,0 +1,30 @@
+# Sample
+Name:			SrHfO2-TS201-06
+ElectrKey:		D06
+Area:			1.5223388e-7
+AErr:			2.515191e-9
+thickness:		10e-9
+capacity:		0.0
+tand:			0.0
+
+# Setting for Freq.Gen.
+Amplitude(V):	4.5
+Frequency(Hz):	1000
+Offset(V):			0
+ScopeCyclAver:	2
+BurstStatus:		ON
+BurstCount:		20
+VrefError:			5e-4
+
+# Settings for Scope
+ScaleDivider_CHAN1:	AUTO
+ScaleDivider_CHAN2:	200e-3
+
+# PlotSettings
+correct_Ebias:		False
+correct_LossI:		False
+custom_curr_offs:	0
+
+# ShuntBox
+Rref:			1000
+RErr:		1
