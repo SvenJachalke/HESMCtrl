@@ -5,7 +5,7 @@ Evaluate data to reconstruct ferroelectric hysteresis
 """
 
 
-def calculate_hysteresis(data,ms,filename):
+def calculate_hysteresis(data,ms,filename,mode='measure'):
 	"""
 	Reconstruct hysteresis shape from measured date (time, Vset, Vref)
 	and measurement settings dict
@@ -95,14 +95,19 @@ def calculate_hysteresis(data,ms,filename):
 	#print('Vdiff: %f V'%(data.Vdiff.max()))
 	
 	# save data and results
-	data.to_csv('Data/'+filename+'/'+filename+'_data.txt')
-	data.to_pickle('Data/'+filename+'/'+filename+'_data.pd')
-	
-	result.to_csv('Data/'+filename+'/'+filename+'_results.txt')
+	if mode == 'measure':
+		path = 'Data/'+filename+'/'
+	elif mode == 'plot':
+		path = ''
+		
+	data.to_csv(path+filename+'_data.txt')
+	data.to_pickle(path+filename+'_data.pd')
+
+	result.to_csv(path+filename+'_results.txt')
 	
 	return data
 
-def plot_data(data,ms,filename,measure=True):
+def plot_data(data,ms,filename,mode='measure'):
 	import matplotlib.pyplot as plt
 	
 	f = plt.figure('Raw Data',figsize=(12,6))
@@ -136,7 +141,7 @@ def plot_data(data,ms,filename,measure=True):
 	plt.show()
 
 	# saving
-	if measure==True:
+	if mode == 'measure':
 		f.savefig('Data/'+filename+'/'+filename+'_plot.pdf')
-	else:
+	elif mode == 'plot':
 		f.savefig(filename+'plot.pdf')

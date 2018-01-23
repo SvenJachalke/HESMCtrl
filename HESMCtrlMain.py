@@ -8,15 +8,15 @@
 from HESMCtrl.Measurement import *
 from HESMCtrl.Evaluation import *
 
-MODE = 'measure'  		# measure, plot
+MODE = 'plot'  		# measure, plot
 
 ms = get_measurement_settings()
 if MODE == 'measure':
 	date_time = get_date_time()
 	filename = create_filename(date_time,ms)
 	
-	data = measure_hysteresis(filename,ms)
-	data = calculate_hysteresis(data,ms,filename)
+	data = measure_hysteresis(filename,ms,mode=MODE)
+	data = calculate_hysteresis(data,ms,filename,mode=MODE)
 	
 	plot_data(data,ms,filename)
 	
@@ -28,10 +28,10 @@ elif MODE == 'plot':
 		datafile = glob('*.pd')[0]
 	
 		data = pd.read_pickle(datafile)
-		filename = datafile.strip('data.pd')
+		filename = datafile.strip('_data.pd')
 	
-		data = calculate_hysteresis(data,ms,filename)
-		plot_data(data,ms,filename,measure=False)
+		data = calculate_hysteresis(data,ms,filename,mode=MODE)
+		plot_data(data,ms,filename,mode=MODE)
 	except IndexError:
 		print('No .pd file found!')
 
