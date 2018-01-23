@@ -26,6 +26,7 @@ elif MODE == 'plot':
 	
 	try:
 		datafile = glob('*.pd')[0]
+		ms = get_measurement_settings()
 	
 		data = pd.read_pickle(datafile)
 		filename = datafile.strip('_data.pd')
