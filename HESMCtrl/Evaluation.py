@@ -144,4 +144,4 @@ def plot_data(data,ms,filename,mode='measure'):
 	if mode == 'measure':
 		f.savefig('Data/'+filename+'/'+filename+'_plot.pdf')
 	elif mode == 'plot':
-		f.savefig(filename+'plot.pdf')
+		f.savefig(filename+'_plot.pdf')
