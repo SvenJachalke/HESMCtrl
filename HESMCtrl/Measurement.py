@@ -26,7 +26,7 @@ def get_config():
 def get_date_time():
 	from time import strftime
 	# get current date and time (for file output, ...)
-	date_time = strftime("%Y-%m-%d_%H-%M-%S")
+	date_time = strftime("%Y-%m-%d_%H-%M")
 	return date_time	
 
 def create_filename(date_time,meas_sett_dict):
