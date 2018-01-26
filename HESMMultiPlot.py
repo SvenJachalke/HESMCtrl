@@ -10,7 +10,6 @@ from matplotlib.pyplot import figure, show
 import tubafcdpy as tubafcd
 from glob import glob
 import pandas as pd
-from HESMCtrl.Evaluation import get_PR
 
 # functions -------------------------------------------------------------------
 def get_tubaf_colorarray(n):
