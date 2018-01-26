@@ -3,7 +3,15 @@
 """
 Evaluate data to reconstruct ferroelectric hysteresis
 """
-
+def get_PR(data):
+	"""
+	calculates remanent polarization and error
+	"""
+	from numpy import mean
+	PR = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P))		#mean of 20 values close to E=0
+	PR_error = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P_error))
+	
+	return PR, PR_error
 
 def calculate_hysteresis(data,ms,filename,mode='measure'):
 	"""
@@ -87,9 +95,7 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	data['P_error'] = (ms['vreferr'] / data.Vref + ms['rreferr']/ms['rref'] + ms['areaerr']/ms['area']) * data.P
 
 	# get PR
-	PR = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P))		#mean of 20 values close to E=0
-	result['PR'] = PR
-	PR_error = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P_error))
+	PR, PR_error = get_PR(data)
 	result['PRerr'] = PR_error
 	print('PR: (%f +- %f) mC/m2'%(abs(PR)*1000,abs(PR_error)*1000))
 	#print('Vdiff: %f V'%(data.Vdiff.max()))
