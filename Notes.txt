@@ -1,0 +1,2 @@
+Wait time between burst: 10ms
+Cyles during measurement time (~11s) with burst (20 cycles) ~ 7000 cycles
