@@ -57,7 +57,8 @@ def get_measurement_settings():
 	- BurstStatus = set burst mode (str ... ON/OFF)
 	- BurstCount = how many cycles in one burst (float)
 	- VrefErr = error of the voltage measurement at Rref (float)
-	- ScopeCyclAver = how many average cycles are set on the scope? (float)
+	- ScopeCyclAver = how many average cycles are set on the scope? -- 0.5 = 1 cycle (float)
+	- Amplification = factor if voltage amplifier (e.g. Matsusada 5kV = 500) is used, if not 1 (float)
 	- ScaleDivider_CHAN1 = Divider for y-Scale on scope's channel1 (AUTO!)
 	- ScaleDivider_CHAN2 = Divider for y-Scale on scope's channel2 (float)
 	- correct_Ebias = aligning the hysteresis around E = 0 (ON/OFF)
@@ -127,6 +128,9 @@ def get_measurement_settings():
 		elif 'VrefErr' in line:
 			vreferr = float(line.split(':')[1].strip())
 			meas_settings.update({'vreferr':vreferr})
+		elif 'Amplification' in line:
+			ampfactor = float(line.split(':')[1].strip())
+			meas_settings.update({'ampfactor':ampfactor})
 		elif 'ScaleDivider_CHAN1' in line: 
 			divCH1 = line.split(':')[1].strip()
 			if divCH1 == 'AUTO':
@@ -239,8 +243,8 @@ def measure_hysteresis(filename,ms):
 	sleep(2*(ms['average']*2)) 
 
 	# record date
-	Vset = array(SCOPE.get_waveform_samples('CHAN1'))		#save Vset array
-	Vref = array(SCOPE.get_waveform_samples('CHAN2'))		#save Vref array
+	Vset = array(SCOPE.get_waveform_samples('CHAN1')) * ms['ampfactor']		#save Vset array
+	Vref = array(SCOPE.get_waveform_samples('CHAN2'))		 	 	 	 	#save Vref array
 	time = array(SCOPE.waveform_time_values)				#save time array
 	#t = t-time_offset
 	
