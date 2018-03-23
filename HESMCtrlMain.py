@@ -15,7 +15,7 @@ if MODE == 'measure':
 	date_time = get_date_time()
 	filename = create_filename(date_time,ms)
 	
-	data = measure_hysteresis(filename,ms,mode=MODE)
+	data = measure_hysteresis(filename,ms)
 	data = calculate_hysteresis(data,ms,filename,mode=MODE)
 	
 	plot_data(data,ms,filename)
