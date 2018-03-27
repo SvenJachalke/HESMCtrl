@@ -184,11 +184,11 @@ def measure_hysteresis(filename,ms):
 	from pandas import DataFrame
 	
 	# get IP and GPIB channel from config file
-	SCOPEIP, GPIBchannel = get_config()
+	SCOPEIP, FGGPIBchannel = get_config()
 		
 	# connect and init HP33120A Frequency Generator via GPIB
 	FG = HP33120A()
-	FG.connect_to_instrument(int(GPIBchannel))
+	FG.connect_to_instrument(int(FGGPIBchannel))
 	FG.off()
 
 	# connect to the DS1054Z via Ehternet (replace IP Adress if needed!)
@@ -230,7 +230,7 @@ def measure_hysteresis(filename,ms):
 	t_start = clock()
 	
 	SCOPE.run()
-	sleep(2)
+	sleep(2)	#wait until scope is ready
 
 	# settings for FG
 	if ms['burst_status'] == True:
@@ -241,9 +241,11 @@ def measure_hysteresis(filename,ms):
 	FG.set_amplitude(ms['amp']) 
 	FG.set_offset(ms['offs'])
 
-	# wait until scope has all the data
-	sleep(2*(ms['average']*2)) 
-
+	# wait until scope has all the data (dpending on frequency)
+	acquire_time = 1/ms['freq'] * 3		#3 periods!
+#	sleep(2*(ms['average']*2)) 
+	sleep(acquire_time * (ms['average']*2) + 1)
+	
 	# record date
 	Vset = array(SCOPE.get_waveform_samples('CHAN1')) * ms['ampfactor']		#save Vset array
 	Vref = array(SCOPE.get_waveform_samples('CHAN2'))		 	 	 	 	#save Vref array
@@ -252,7 +254,7 @@ def measure_hysteresis(filename,ms):
 	
 	# stop acquisition and switch off Freq.Gen.
 	SCOPE.stop()
-	FG.off()		
+	FG.off()
 	
 	t_end = clock()
 	data = DataFrame({'time':time,'Vset':Vset,'Vref':Vref})
