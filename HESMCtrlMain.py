@@ -26,7 +26,7 @@ elif MODE == 'plot':
 	from glob import glob
 	
 	try:
-		msfile = glob('*settings.txt')[1]
+		msfile = glob('*V_settings.txt')[0]
 		datafile = glob('*.pd')[0]
 		ms = get_measurement_settings(msfile)
 	

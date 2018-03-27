@@ -128,7 +128,7 @@ def get_measurement_settings(msfile='meas_settings.txt'):
 			meas_settings.update({'vreferr':vreferr})
 		elif 'Amplification' in line:
 			ampfactor = float(line.split(':')[1].strip())
-			meas_settings.update({'ampfactor':ampfactor})
+			meas_settings.update({'ampfactor':ampfactor})	
 		elif 'ScaleDivider_CHAN1' in line: 
 			divCH1 = line.split(':')[1].strip()
 			if divCH1 == 'AUTO':
@@ -160,6 +160,10 @@ def get_measurement_settings(msfile='meas_settings.txt'):
 		elif 'RErr' in line:
 			rreferr = float(line.split(':')[1].strip())
 			meas_settings.update({'rreferr':rreferr})
+	
+	# add amplification factor of 1, if not found in old files
+	if 'ampfactor' not in meas_settings.keys():
+		meas_settings.update({'ampfactor':1.0})
 			
 	return meas_settings
 
