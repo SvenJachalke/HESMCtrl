@@ -10,9 +10,10 @@ from HESMCtrl.Evaluation import *
 
 MODE = 'plot'  		# measure, plot
 
-ms = get_measurement_settings()
+
 if MODE == 'measure':
 	date_time = get_date_time()
+	ms = get_measurement_settings()
 	filename = create_filename(date_time,ms)
 	
 	data = measure_hysteresis(filename,ms)
@@ -25,8 +26,9 @@ elif MODE == 'plot':
 	from glob import glob
 	
 	try:
+		msfile = glob('*V_settings.txt')[0]
 		datafile = glob('*.pd')[0]
-		ms = get_measurement_settings()
+		ms = get_measurement_settings(msfile)
 	
 		data = pd.read_pickle(datafile)
 		filename = datafile.strip('_data.pd')

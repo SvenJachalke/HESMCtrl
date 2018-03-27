@@ -41,7 +41,7 @@ def create_filename(date_time,meas_sett_dict):
 		   meas_sett_dict['electrkey'],meas_sett_dict['amp'],meas_sett_dict['freq'],meas_sett_dict['offs'])
 	return name
 
-def get_measurement_settings():
+def get_measurement_settings(msfile='meas_settings.txt'):
 	"""
 	read meausrement setting for devices from measurement settings file
 	- Name = sample name for file (str)
@@ -67,8 +67,6 @@ def get_measurement_settings():
 	- Rref = reference resistance (float)
 	- RErr = error of the reference resistance (float)
 	"""
-	import glob
-	msfile = glob.glob('*settings.txt')[0]
 	
 	f = open(msfile,'r')
 	meas_settings  = {}
@@ -130,7 +128,7 @@ def get_measurement_settings():
 			meas_settings.update({'vreferr':vreferr})
 		elif 'Amplification' in line:
 			ampfactor = float(line.split(':')[1].strip())
-			meas_settings.update({'ampfactor':ampfactor})
+			meas_settings.update({'ampfactor':ampfactor})	
 		elif 'ScaleDivider_CHAN1' in line: 
 			divCH1 = line.split(':')[1].strip()
 			if divCH1 == 'AUTO':
@@ -162,6 +160,10 @@ def get_measurement_settings():
 		elif 'RErr' in line:
 			rreferr = float(line.split(':')[1].strip())
 			meas_settings.update({'rreferr':rreferr})
+	
+	# add amplification factor of 1, if not found in old files
+	if 'ampfactor' not in meas_settings.keys():
+		meas_settings.update({'ampfactor':1.0})
 			
 	return meas_settings
 
@@ -182,11 +184,11 @@ def measure_hysteresis(filename,ms):
 	from pandas import DataFrame
 	
 	# get IP and GPIB channel from config file
-	SCOPEIP, GPIBchannel = get_config()
+	SCOPEIP, FGGPIBchannel = get_config()
 		
 	# connect and init HP33120A Frequency Generator via GPIB
 	FG = HP33120A()
-	FG.connect_to_instrument(int(GPIBchannel))
+	FG.connect_to_instrument(int(FGGPIBchannel))
 	FG.off()
 
 	# connect to the DS1054Z via Ehternet (replace IP Adress if needed!)
@@ -228,7 +230,7 @@ def measure_hysteresis(filename,ms):
 	t_start = clock()
 	
 	SCOPE.run()
-	sleep(2)
+	sleep(2)	#wait until scope is ready
 
 	# settings for FG
 	if ms['burst_status'] == True:
@@ -239,9 +241,11 @@ def measure_hysteresis(filename,ms):
 	FG.set_amplitude(ms['amp']) 
 	FG.set_offset(ms['offs'])
 
-	# wait until scope has all the data
-	sleep(2*(ms['average']*2)) 
-
+	# wait until scope has all the data (dpending on frequency)
+	acquire_time = 1/ms['freq'] * 3		#3 periods!
+#	sleep(2*(ms['average']*2)) 
+	sleep(acquire_time * (ms['average']*2) + 1)
+	
 	# record date
 	Vset = array(SCOPE.get_waveform_samples('CHAN1')) * ms['ampfactor']		#save Vset array
 	Vref = array(SCOPE.get_waveform_samples('CHAN2'))		 	 	 	 	#save Vref array
@@ -250,7 +254,7 @@ def measure_hysteresis(filename,ms):
 	
 	# stop acquisition and switch off Freq.Gen.
 	SCOPE.stop()
-	FG.off()		
+	FG.off()
 	
 	t_end = clock()
 	data = DataFrame({'time':time,'Vset':Vset,'Vref':Vref})

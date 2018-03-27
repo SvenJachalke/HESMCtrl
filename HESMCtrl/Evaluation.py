@@ -122,25 +122,52 @@ def plot_data(data,ms,filename,mode='measure'):
 	axVset = f.add_subplot(121)
 	axIref = axVset.twinx()	
 	
-	axVset.grid()
+	axVset.grid(linestyle='--')
 
-	axVset.plot(data.time,data.Vset,color='b',linestyle='-')
-	axIref.plot(data.time,data.I*1e3,color='r',linestyle='-')
+	# check ax scaling 
+	if data.Vset.max() / 1e6 < 1 and data.Vset.max() / 1e6 > 0.001:
+		Vset = data.Vset * 1e-3
+		axVset.set_ylabel('Vset (kV)',color='b')
+	else:
+		Vset = data.Vset
+		axVset.set_ylabel('Vset (V)',color='b')
+		
 
-	axVset.set_ylabel('Vset (V)',color='b')
-	axIref.set_ylabel('I (mA)',color='r')
+	if data.I.max() * 1e3 > 1 and data.I.max() * 1e3 < 1000:
+		Iref = data.I * 1e3
+		axIref.set_ylabel('I (mA)',color='r')
+	elif data.I.max() * 1e6 > 1 and data.I.max() * 1e6 < 1000:
+		Iref = data.I * 1e6
+		axIref.set_ylabel(r'I ($\mu$A)',color='r') 
+	else:
+		Iref = data.I
+		axIref.set_ylabel('I (A)',color='b')
+	
+	axVset.plot(data.time,Vset,color='b',linestyle='-')
+	axIref.plot(data.time,Iref,color='r',linestyle='-')
 
 	f.tight_layout()
 
 	# plot hysteresis
 	axHyst = f.add_subplot(122)
-	axHyst.grid()
+	axHyst.grid(linestyle='--')
 	
-	axHyst.plot(data.E/1e6,data.P*1e3,label=r'%.1f V'%(ms['amp']),color='b')
+	# check ax scaling 
+	if data.E.max() / 1e6 < 1 and data.E.max() / 1e6 > 0.001:
+		E = data.E * 1e-3
+		axHyst.set_xlabel('E (kV/m)')
+	elif data.E.max() / 1e9 < 1 and data.E.max() / 1e9 > 0.001:
+		E = data.E * 1e-6
+		axHyst.set_xlabel('E (MV/m)')
+	else:
+		E = data.E
+		axHyst.set_xlabel('E (V/m)')
+	
+	P = data.P * 1e2 #yC/cm2 
+	axHyst.set_ylabel(r'P ($\mu$C/cm$^2$)')
+	
+	axHyst.plot(E,P,label=r'%.1f V'%(ms['amp']*ms['ampfactor']),color='b')
 	axHyst.legend()
-
-	axHyst.set_xlabel('E (MV/m)')
-	axHyst.set_ylabel('P (mC/m2)')
 
 	# formatting and show
 	f.tight_layout()
