@@ -41,7 +41,7 @@ def create_filename(date_time,meas_sett_dict):
 		   meas_sett_dict['electrkey'],meas_sett_dict['amp'],meas_sett_dict['freq'],meas_sett_dict['offs'])
 	return name
 
-def get_measurement_settings():
+def get_measurement_settings(msfile='meas_settings.txt'):
 	"""
 	read meausrement setting for devices from measurement settings file
 	- Name = sample name for file (str)
@@ -67,8 +67,6 @@ def get_measurement_settings():
 	- Rref = reference resistance (float)
 	- RErr = error of the reference resistance (float)
 	"""
-	import glob
-	msfile = glob.glob('*settings.txt')[0]
 	
 	f = open(msfile,'r')
 	meas_settings  = {}
