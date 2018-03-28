@@ -106,10 +106,10 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	elif mode == 'plot':
 		path = ''
 		
-	data.to_csv(path+filename+'_data.txt')
-	data.to_pickle(path+filename+'_data.pd')
+	# data.to_csv(path+filename+'_data.txt')
+	# data.to_pickle(path+filename+'_data.pd')
 
-	result.to_csv(path+filename+'_results.txt')
+	# result.to_csv(path+filename+'_results.txt')
 	
 	return data
 
@@ -174,7 +174,7 @@ def plot_data(data,ms,filename,mode='measure'):
 	plt.show()
 
 	# saving
-	if mode == 'measure':
-		f.savefig('Data/'+filename+'/'+filename+'_plot.pdf')
-	elif mode == 'plot':
-		f.savefig(filename+'_plot.pdf')
+	#if mode == 'measure':
+	#	f.savefig('Data/'+filename+'/'+filename+'_plot.pdf')
+	#elif mode == 'plot':
+	#	f.savefig(filename+'_plot.pdf')

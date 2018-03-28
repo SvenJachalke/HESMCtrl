@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Module to measure the ferroelectric hysteresis (Shunt Method) with a HP33120A 
@@ -167,6 +167,29 @@ def get_measurement_settings(msfile='meas_settings.txt'):
 			
 	return meas_settings
 
+
+def average(data_sets_list):
+	from numpy import mean
+	from pandas import DataFrame
+	
+	list_length = len(data_sets_list)
+	
+	temp_time = []
+	temp_Vset = []
+	temp_Vref = []
+	
+	for i in range(list_length):
+		
+		temp_time.append(data_sets_list[i].time)
+		temp_Vset.append(data_sets_list[i].Vset) 
+		temp_Vref.append(data_sets_list[i].Vref)
+		
+	time = mean(data_sets_list[i].time,axis=0)
+	data = DataFrame({'time':mean(temp_time,axis=0),'Vset':mean(temp_Vset,axis=0),'Vref':mean(temp_Vref,axis=0)})
+	
+	data = data.drop(data.index[[1198,1199]])
+	return data
+	
 def measure_hysteresis(filename,ms):
 	"""
 	Measures ferroelectric hysteresis (Shunt Method) with a HP33120A 
@@ -179,6 +202,7 @@ def measure_hysteresis(filename,ms):
 	from HESMCtrl.HP33120ACtrl import HP33120A
 	from time import clock, sleep
 	from os import mkdir
+	import sys
 	from shutil import copy2
 	from numpy import array
 	from pandas import DataFrame
@@ -210,7 +234,7 @@ def measure_hysteresis(filename,ms):
 		SCOPE.display_channel('CHAN2')		#Vref
 
 	# setting scale depending on input signal
-	SCOPE.timebase_scale = 1./(ms['freq'])/5
+	SCOPE.timebase_scale = 1./(ms['freq'])/5		# setting strange ... but deviding by 5 gives approx 3 periods in display
 	SCOPE.set_channel_scale('CHAN1',ms['scale_divider_CHAN1'])		
 	SCOPE.set_channel_scale('CHAN2',ms['scale_divider_CHAN2'])
 	
@@ -226,47 +250,104 @@ def measure_hysteresis(filename,ms):
 	#preample = SCOPE.waveform_preamble_dict
 
 	# start aquisition with scope
-	print('data aquisition ...')
+	print('data acquisition ...')
 	t_start = clock()
 	
-	SCOPE.run()
-	sleep(2)	#wait until scope is ready
+	low_f_flag = True						# has to be passed to the function in the end!
+													# when using low frequencies, internal averaging of the scope is not possible
+													# has to be done manually!!! --> using single trigger measurements (SCOPE.single()) over given average cycles
+	
+	if low_f_flag == True:
+		print('... low freq measurement enabled')
+		print('... averaging cycles: %i' % ms['average'])
+		
+		# calculate acquisition time for each cycle
+		# set for 3 periods as provided by the timescale (see above)	
+		acquisition_time = 1/ms['freq'] * 3	
+		
+		# init list of all cyclesets
+		cycle_data_sets = []
+		
+		for i in range(int(ms['average'])):
+			
+			print('... cycle %i' % i)
+			# maybe do some trigger stuff first?
+			
+			# set scope to single aquisition mode
+			SCOPE.single()
+		
+			# setting frequency generator
+			FG.set_shape('TRI')
+			FG.set_frequency(ms['freq'])
+			FG.set_amplitude(ms['amp']) 
+			FG.set_offset(ms['offs'])
+			
+			SCOPE.tforce()
+			
+			# wat until scope has all data
+			sleep(acquisition_time)
+			
+			# save data
+			Vset = array(SCOPE.get_waveform_samples('CHAN1',mode='NORM')) * ms['ampfactor']
+			Vref = array(SCOPE.get_waveform_samples('CHAN2',mode='NORM')) 
+			time = array(SCOPE.waveform_time_values)
+			
+			# combine data in DataFrame
+			cycle_data = DataFrame({'time':time,'Vset':Vset,'Vref':Vref})
+			cycle_data_sets.append(cycle_data)
+			
+			# stop scope (if not already done) and frequency generator
+			SCOPE.stop()
+			FG.off()
+			
+			# wait 2 seconds before start again
+			sleep(2)	
 
-	# settings for FG
-	if ms['burst_status'] == True:
-		FG.set_burst_count(ms['burst_count'])
-		FG.set_burst_status('ON')
-	FG.set_shape('TRI')
-	FG.set_frequency(ms['freq'])
-	FG.set_amplitude(ms['amp']) 
-	FG.set_offset(ms['offs'])
+		# average data after loop
+		data = average(cycle_data_sets)
+		
+	else:
+		SCOPE.run()
+		sleep(2)	#wait until scope is ready
 
-	# wait until scope has all the data (dpending on frequency)
-	acquire_time = 1/ms['freq'] * 3		#3 periods!
-#	sleep(2*(ms['average']*2)) 
-	sleep(acquire_time * (ms['average']*2) + 1)
-	
-	# record date
-	Vset = array(SCOPE.get_waveform_samples('CHAN1')) * ms['ampfactor']		#save Vset array
-	Vref = array(SCOPE.get_waveform_samples('CHAN2'))		 	 	 	 	#save Vref array
-	time = array(SCOPE.waveform_time_values)				#save time array
-	#t = t-time_offset
-	
-	# stop acquisition and switch off Freq.Gen.
-	SCOPE.stop()
-	FG.off()
-	
+		# settings for FG
+		if ms['burst_status'] == True:
+			FG.set_burst_count(ms['burst_count'])
+			FG.set_burst_status('ON')
+		FG.set_shape('TRI')
+		FG.set_frequency(ms['freq'])
+		FG.set_amplitude(ms['amp']) 
+		FG.set_offset(ms['offs'])
+
+		# wait until scope has all the data (dpending on frequency)
+		acquire_time = 1/ms['freq'] * 3	#3 periods!
+	#	sleep(2*(ms['average']*2)) 
+		sleep(acquisition_time + (2*ms['average'] * acquisition_time))
+		# sleep(35)
+		# record date
+		Vset = array(SCOPE.get_waveform_samples('CHAN1',mode='NORM')) * ms['ampfactor']
+		Vref = array(SCOPE.get_waveform_samples('CHAN2',mode='NORM')) 
+		#Vset = array(SCOPE.get_waveform_samples('CHAN1')) * ms['ampfactor']		#save Vset array
+		#Vref = array(SCOPE.get_waveform_samples('CHAN2'))		 	 	 	 	#save Vref array
+		time = array(SCOPE.waveform_time_values)				#save time array
+		#t = t-time_offset
+		
+		# stop acquisition and switch off Freq.Gen.
+		SCOPE.stop()
+		FG.off()
+
+		data = DataFrame({'time':time,'Vset':Vset,'Vref':Vref})
+
+		
 	t_end = clock()
-	data = DataFrame({'time':time,'Vset':Vset,'Vref':Vref})
-	
 	print('... finished')
 	print('meas. time: %f' % (t_end-t_start))
 	print_line()
 	
 	
 	# copy settings file (logs will be writen after evaluation)
-	mkdir('Data/%s'%filename)
-	copy2('meas_settings.txt','Data/'+filename+'/'+filename+'_settings.txt')
-	print('... log files written!')
+	#mkdir('Data/%s'%filename)
+	#copy2('meas_settings.txt','Data/'+filename+'/'+filename+'_settings.txt')
+	#print('... log files written!')
 	
-	return data
+	return data, FG, SCOPE
