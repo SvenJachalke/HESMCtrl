@@ -9,7 +9,7 @@ def print_line():
 	"""
 	line for console output
 	"""
-	print('----------------------')
+	print('--------------------------')
 
 def get_config():
 	""" 
@@ -34,11 +34,11 @@ def create_filename(date_time,meas_sett_dict):
 	create file name depending on date, time and measurement settings
 	"""
 	if meas_sett_dict['electrkey'] == '':
-		name = "%s_%s_A%.1fV-f%.1fHz-O%.1fV"%(date_time,meas_sett_dict['name'],
-		   meas_sett_dict['amp'],meas_sett_dict['freq'],meas_sett_dict['offs'])
+		name = "%s_%s_A%.1fV-f%.2fHz-O%.1fV"%(date_time,meas_sett_dict['name'],
+		   meas_sett_dict['amp']*meas_sett_dict['ampfactor'],meas_sett_dict['freq'],meas_sett_dict['offs'])
 	else:
-		name = "%s_%s_%s_A%.1fV-f%.1fHz-O%.1fV"%(date_time,meas_sett_dict['name'],
-		   meas_sett_dict['electrkey'],meas_sett_dict['amp'],meas_sett_dict['freq'],meas_sett_dict['offs'])
+		name = "%s_%s_%s_A%.1fV-f%.2fHz-O%.1fV"%(date_time,meas_sett_dict['name'],
+		   meas_sett_dict['electrkey'],meas_sett_dict['amp']*meas_sett_dict['ampfactor'],meas_sett_dict['freq'],meas_sett_dict['offs'])
 	return name
 
 def get_measurement_settings(msfile='meas_settings.txt'):
@@ -164,7 +164,8 @@ def get_measurement_settings(msfile='meas_settings.txt'):
 	# add amplification factor of 1, if not found in old files
 	if 'ampfactor' not in meas_settings.keys():
 		meas_settings.update({'ampfactor':1.0})
-			
+	if meas_settings['average'] == 0.0:
+		meas_settings['average'] = 1.0
 	return meas_settings
 
 
@@ -184,7 +185,6 @@ def average(data_sets_list):
 		temp_Vset.append(data_sets_list[i].Vset) 
 		temp_Vref.append(data_sets_list[i].Vref)
 		
-	time = mean(data_sets_list[i].time,axis=0)
 	data = DataFrame({'time':mean(temp_time,axis=0),'Vset':mean(temp_Vset,axis=0),'Vref':mean(temp_Vref,axis=0)})
 	
 	data = data.drop(data.index[[1198,1199]])
@@ -227,6 +227,10 @@ def measure_hysteresis(filename,ms):
 	# SETTING INSTURMENTS AND START MEASUREMENT
 	print_line()
 	print('Setting instruments ...')
+	print('... Amplitude: %.2f V' % (ms['amp']*ms['ampfactor']))
+	print('... Frequency: %.2f Hz' % ms['freq'])
+	print('... Offset:    %.2f V' % ms['offs'])
+	print_line()
 
 	# activate Scope's Channel1 and Channel2 if necessary
 	if 'CHAN1' not in SCOPE.displayed_channels or 'CHAN2' not in SCOPE.displayed_channels:
@@ -250,7 +254,7 @@ def measure_hysteresis(filename,ms):
 	#preample = SCOPE.waveform_preamble_dict
 
 	# start aquisition with scope
-	print('data acquisition ...')
+	print('Data acquisition ...')
 	t_start = clock()
 	
 	low_f_flag = True						# has to be passed to the function in the end!
@@ -259,19 +263,20 @@ def measure_hysteresis(filename,ms):
 	
 	if low_f_flag == True:
 		print('... low freq measurement enabled')
-		print('... averaging cycles: %i' % ms['average'])
+		#print('... averaging cycles: %i' % ms['average'])
 		
 		# calculate acquisition time for each cycle
 		# set for 3 periods as provided by the timescale (see above)	
-		acquisition_time = 1/ms['freq'] * 3	
+		acquisition_time = 1/ms['freq'] * 3.2	
 		
 		# init list of all cyclesets
 		cycle_data_sets = []
 		
 		for i in range(int(ms['average'])):
 			
-			print('... cycle %i' % i)
-			# maybe do some trigger stuff first?
+			# Shell Informations
+			sys.stdout.write('\r... acquisition cycle %i/%i'%(i+1,ms['average']))
+			sys.stdout.flush()
 			
 			# set scope to single aquisition mode
 			SCOPE.single()
@@ -282,6 +287,7 @@ def measure_hysteresis(filename,ms):
 			FG.set_amplitude(ms['amp']) 
 			FG.set_offset(ms['offs'])
 			
+			# Force Trigger!
 			SCOPE.tforce()
 			
 			# wat until scope has all data
@@ -303,7 +309,12 @@ def measure_hysteresis(filename,ms):
 			# wait 2 seconds before start again
 			sleep(2)	
 
+		# stop time measurement
+		t_end = clock()
+		print('\n... finished acquisition; time: %.2f s' % (t_end-t_start))
+		
 		# average data after loop
+		print('... averaging ...')
 		data = average(cycle_data_sets)
 		
 	else:
@@ -338,16 +349,14 @@ def measure_hysteresis(filename,ms):
 
 		data = DataFrame({'time':time,'Vset':Vset,'Vref':Vref})
 
-		
-	t_end = clock()
-	print('... finished')
-	print('meas. time: %f' % (t_end-t_start))
-	print_line()
+		# stop time measurement
+		t_end = clock()
+		print('... finished acquisition; time: %.2f s' % (t_end-t_start))
+		print_line()
 	
 	
 	# copy settings file (logs will be writen after evaluation)
-	#mkdir('Data/%s'%filename)
-	#copy2('meas_settings.txt','Data/'+filename+'/'+filename+'_settings.txt')
-	#print('... log files written!')
+	mkdir('Data/%s'%filename)
+	copy2('meas_settings.txt','Data/'+filename+'/'+filename+'_settings.txt')
 	
-	return data, FG, SCOPE
+	return data

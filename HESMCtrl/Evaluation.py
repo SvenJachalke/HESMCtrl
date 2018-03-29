@@ -23,6 +23,10 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	from scipy.integrate import cumtrapz
 	import pandas as pd
 	
+	print('--------------------------')
+	print('Evaluation ...')
+	print('... calculating hysteresis')
+	
 	# prepare results
 	result = pd.Series({'Vamp':ms['amp']})
 	result['frequency'] = ms['freq']
@@ -39,8 +43,9 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	#calc and center electric field from Vset and sample thickness d (+save)
 	data['E'] = data.Vdiff / ms['thickness']
 	E_bias = abs(max(data.E))-abs(min(data.E))
-	print('E_bias: %f MV/m ; %f V'%(E_bias/1e6,E_bias*ms['thickness']))
+	print('... E_bias: %f MV/m ; %f V'%(E_bias/1e6,E_bias*ms['thickness']))
 	if ms['correct_Ebias'] == True:
+		print('... correct Ebias')
 		if E_bias < 0:
 			data['E'] = data.E + abs(E_bias)
 		else:
@@ -49,20 +54,22 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	
 	# correct loss current before removing offset	
 	if ms['correct_LossI'] == True:
+		print('... correct loss current')
 		try:
 			data['I_Loss'] = data.Vref * 2 * pi * ms['freq'] * ms['cap'] * ms['tand']
 			data['I'] = data.I - data.I_Loss
-			print('ILoss/IP: %e'%(mean(data.I_Loss)/mean(data.I)))
+			print('... ILoss/IP: %e'%(mean(data.I_Loss)/mean(data.I)))
 		except ValueError:
 			print('Some values missing! (Capacity, tan d ?)')
 	
 	# calc offset current from mean of 2 periods
 	if ms['custom_curr_offs'] == 0:
-		start_index = 100
+		start_index = 200
 		increment = data.time[1]-data.time[0]
 		steps = int(1./ ms['freq'] / increment * 2)
 		offset = mean(data.I[start_index:steps+start_index])
 	else:
+		print('... auto offset current disabled')
 		try:
 			offset = ms['custom_curr_offs']
 		except ValueError:
@@ -97,24 +104,30 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	# get PR
 	PR, PR_error = get_PR(data)
 	result['PRerr'] = PR_error
-	print('PR: (%f +- %f) mC/m2'%(abs(PR)*1000,abs(PR_error)*1000))
+	print('... PR: (%f +- %f) yC/cm2'%(abs(PR)*100,abs(PR_error)*100))
 	#print('Vdiff: %f V'%(data.Vdiff.max()))
 	
 	# save data and results
 	if mode == 'measure':
 		path = 'Data/'+filename+'/'
+		print('... log files written!')
 	elif mode == 'plot':
 		path = ''
 		
-	# data.to_csv(path+filename+'_data.txt')
-	# data.to_pickle(path+filename+'_data.pd')
+	data.to_csv(path+filename+'_data.txt')
+	data.to_pickle(path+filename+'_data.pd')
 
-	# result.to_csv(path+filename+'_results.txt')
+	result.to_csv(path+filename+'_results.txt')
 	
 	return data
 
 def plot_data(data,ms,filename,mode='measure'):
 	import matplotlib.pyplot as plt
+	
+	#colors
+	blue = (0/255.0, 100/255.0, 168/255.0)
+	red = (181/255.0, 18/255.0, 62/255.0)
+	green = (25/255.0, 150/255.0, 43/255.0) 
 	
 	f = plt.figure('Raw Data',figsize=(12,6))
 	# plot raw data
@@ -127,24 +140,24 @@ def plot_data(data,ms,filename,mode='measure'):
 	# check ax scaling 
 	if data.Vset.max() / 1e6 < 1 and data.Vset.max() / 1e6 > 0.001:
 		Vset = data.Vset * 1e-3
-		axVset.set_ylabel('Vset (kV)',color='b')
+		axVset.set_ylabel('Vset (kV)',color=green)
 	else:
 		Vset = data.Vset
-		axVset.set_ylabel('Vset (V)',color='b')
+		axVset.set_ylabel('Vset (V)',color=green)
 		
 
 	if data.I.max() * 1e3 > 1 and data.I.max() * 1e3 < 1000:
 		Iref = data.I * 1e3
-		axIref.set_ylabel('I (mA)',color='r')
+		axIref.set_ylabel('I (mA)',color=red)
 	elif data.I.max() * 1e6 > 1 and data.I.max() * 1e6 < 1000:
 		Iref = data.I * 1e6
-		axIref.set_ylabel(r'I ($\mu$A)',color='r') 
+		axIref.set_ylabel(r'I ($\mu$A)',color=red) 
 	else:
 		Iref = data.I
-		axIref.set_ylabel('I (A)',color='b')
+		axIref.set_ylabel('I (A)',color=red)
 	
-	axVset.plot(data.time,Vset,color='b',linestyle='-')
-	axIref.plot(data.time,Iref,color='r',linestyle='-')
+	axVset.plot(data.time,Vset,color=green,linestyle='-')
+	axIref.plot(data.time,Iref,color=red,linestyle='-')
 
 	f.tight_layout()
 
@@ -166,15 +179,19 @@ def plot_data(data,ms,filename,mode='measure'):
 	P = data.P * 1e2 #yC/cm2 
 	axHyst.set_ylabel(r'P ($\mu$C/cm$^2$)')
 	
-	axHyst.plot(E,P,label=r'%.1f V'%(ms['amp']*ms['ampfactor']),color='b')
+	axHyst.plot(E,P,label=r'A: %.2f V, f: %.3f Hz'%(ms['amp']*ms['ampfactor'],ms['freq']),color=blue)
 	axHyst.legend()
 
+	# saving
+	if mode == 'measure':
+		print('... saving plot')
+		f.savefig('Data/'+filename+'/'+filename+'_plot.pdf')
+	elif mode == 'plot':
+		f.savefig(filename+'_plot.pdf')
+		
+		
 	# formatting and show
 	f.tight_layout()
 	plt.show()
 
-	# saving
-	#if mode == 'measure':
-	#	f.savefig('Data/'+filename+'/'+filename+'_plot.pdf')
-	#elif mode == 'plot':
-	#	f.savefig(filename+'_plot.pdf')
+	
