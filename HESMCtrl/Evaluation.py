@@ -138,23 +138,24 @@ def plot_data(data,ms,filename,mode='measure'):
 	axVset.grid(linestyle='--')
 
 	# check ax scaling 
-	if data.Vset.max() / 1e6 < 1 and data.Vset.max() / 1e6 > 0.001:
-		Vset = data.Vset * 1e-3
-		axVset.set_ylabel('Vset (kV)',color=green)
-	else:
-		Vset = data.Vset
-		axVset.set_ylabel('Vset (V)',color=green)
-		
+#	if data.Vset.max() / 1e6 < 1 and data.Vset.max() / 1e6 > 0.001:
+#		Vset = data.Vset * 1e-3
+#		axVset.set_ylabel('Vset (kV)',color=green)
+#	else:
+#		Vset = data.Vset
+#		axVset.set_ylabel('Vset (V)',color=green)
+	axVset.set_ylabel('Vset (V)',color=green)
 
-	if data.I.max() * 1e3 > 1 and data.I.max() * 1e3 < 1000:
-		Iref = data.I * 1e3
-		axIref.set_ylabel('I (mA)',color=red)
-	elif data.I.max() * 1e6 > 1 and data.I.max() * 1e6 < 1000:
-		Iref = data.I * 1e6
-		axIref.set_ylabel(r'I ($\mu$A)',color=red) 
-	else:
-		Iref = data.I
-		axIref.set_ylabel('I (A)',color=red)
+#	if data.I.max() * 1e3 > 1 and data.I.max() * 1e3 < 1000:
+#		Iref = data.I * 1e3
+#		axIref.set_ylabel('I (mA)',color=red)
+#	elif data.I.max() * 1e6 > 1 and data.I.max() * 1e6 < 1000:
+#		Iref = data.I * 1e6
+#		axIref.set_ylabel(r'I ($\mu$A)',color=red) 
+#	else:
+#		Iref = data.I
+#		axIref.set_ylabel('I (A)',color=red)
+	axIref.set_ylabel('I (A)',color=red)
 	
 	axVset.plot(data.time,Vset,color=green,linestyle='-')
 	axIref.plot(data.time,Iref,color=red,linestyle='-')
@@ -166,15 +167,16 @@ def plot_data(data,ms,filename,mode='measure'):
 	axHyst.grid(linestyle='--')
 	
 	# check ax scaling 
-	if data.E.max() / 1e6 < 1 and data.E.max() / 1e6 > 0.001:
-		E = data.E * 1e-3
-		axHyst.set_xlabel('E (kV/m)')
-	elif data.E.max() / 1e9 < 1 and data.E.max() / 1e9 > 0.001:
-		E = data.E * 1e-6
-		axHyst.set_xlabel('E (MV/m)')
-	else:
-		E = data.E
-		axHyst.set_xlabel('E (V/m)')
+#	if data.E.max() / 1e6 <= 1 and data.E.max() / 1e6 > 0.001:
+#		E = data.E * 1e-3
+#		axHyst.set_xlabel('E (kV/m)')
+#	elif data.E.max() / 1e9 <= 1 and data.E.max() / 1e9 > 0.001:
+#		E = data.E * 1e-6
+#		axHyst.set_xlabel('E (MV/m)')
+#	else:
+#		E = data.E
+#		axHyst.set_xlabel('E (V/m)')
+	axHyst.set_xlabel('E (V/m)')
 	
 	P = data.P * 1e2 #yC/cm2 
 	axHyst.set_ylabel(r'P ($\mu$C/cm$^2$)')
