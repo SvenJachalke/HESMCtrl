@@ -1,18 +1,18 @@
 # Sample
-Name:			APC_PMN-PT
+Name:			PI-PZT-PL08
 ElectrKey:		01
-Area:			1.76e-4
-AErr:			1e-10
-thickness:		500e-3
+Area:			1.319e-4
+AErr:			2.944e-7
+thickness:		532e-3
 capacity:		0.0
 tand:			0.0
 
 # Setting for Freq.Gen.
-Amplitude(V):	0.6
+Amplitude(V):	2.25
 Frequency(Hz):	0.1
 Offset(V):	0
-ScopeCyclAver:	5
-BurstStatus:	OFF
+ScopeCyclAver:	3
+BurstStatus:	ON
 BurstCount:	20
 VrefError:	5e-4
 Amplification:	500
@@ -27,5 +27,5 @@ correct_LossI:		False
 custom_curr_offs:	0
 
 # ShuntBox
-Rref:		10000
-RErr:		10
+Rref:		150e3
+RErr:		1000

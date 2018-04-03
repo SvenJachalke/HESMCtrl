@@ -263,11 +263,13 @@ def measure_hysteresis(filename,ms):
 	
 	if low_f_flag == True:
 		print('... low freq measurement enabled')
+		if ms['burst_status'] == True:
+			print('... burst enabled')
 		#print('... averaging cycles: %i' % ms['average'])
 		
 		# calculate acquisition time for each cycle
 		# set for 3 periods as provided by the timescale (see above)	
-		acquisition_time = 1/ms['freq'] * 3.2	
+		acquisition_time = 1/ms['freq'] * 3.5	
 		
 		# init list of all cyclesets
 		cycle_data_sets = []
@@ -277,15 +279,18 @@ def measure_hysteresis(filename,ms):
 			# Shell Informations
 			sys.stdout.write('\r... acquisition cycle %i/%i'%(i+1,ms['average']))
 			sys.stdout.flush()
-			
-			# set scope to single aquisition mode
-			SCOPE.single()
 		
 			# setting frequency generator
+			if ms['burst_status'] == True:
+				FG.set_burst_count(ms['burst_count'])
+				FG.set_burst_status('ON')
 			FG.set_shape('TRI')
 			FG.set_frequency(ms['freq'])
 			FG.set_amplitude(ms['amp']) 
 			FG.set_offset(ms['offs'])
+			
+			# set scope to single aquisition mode
+			SCOPE.single()
 			
 			# Force Trigger!
 			SCOPE.tforce()

@@ -64,7 +64,7 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	
 	# calc offset current from mean of 2 periods
 	if ms['custom_curr_offs'] == 0:
-		start_index = 200
+		start_index = 100
 		increment = data.time[1]-data.time[0]
 		steps = int(1./ ms['freq'] / increment * 2)
 		offset = mean(data.I[start_index:steps+start_index])
@@ -136,6 +136,9 @@ def plot_data(data,ms,filename,mode='measure'):
 	axIref = axVset.twinx()	
 	
 	axVset.grid(linestyle='--')
+	
+	Vset = data.Vset
+	Iref = data.I
 
 	# check ax scaling 
 #	if data.Vset.max() / 1e6 < 1 and data.Vset.max() / 1e6 > 0.001:
@@ -166,6 +169,8 @@ def plot_data(data,ms,filename,mode='measure'):
 	axHyst = f.add_subplot(122)
 	axHyst.grid(linestyle='--')
 	
+	E = data.E
+	
 	# check ax scaling 
 #	if data.E.max() / 1e6 <= 1 and data.E.max() / 1e6 > 0.001:
 #		E = data.E * 1e-3
@@ -179,10 +184,14 @@ def plot_data(data,ms,filename,mode='measure'):
 	axHyst.set_xlabel('E (V/m)')
 	
 	P = data.P * 1e2 #yC/cm2 
+
 	axHyst.set_ylabel(r'P ($\mu$C/cm$^2$)')
 	
 	axHyst.plot(E,P,label=r'A: %.2f V, f: %.3f Hz'%(ms['amp']*ms['ampfactor'],ms['freq']),color=blue)
 	axHyst.legend()
+	
+	# layout
+	f.tight_layout()
 
 	# saving
 	if mode == 'measure':
@@ -191,9 +200,7 @@ def plot_data(data,ms,filename,mode='measure'):
 	elif mode == 'plot':
 		f.savefig(filename+'_plot.pdf')
 		
-		
-	# formatting and show
-	f.tight_layout()
+	# show()
 	plt.show()
 
 	
