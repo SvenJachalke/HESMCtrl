@@ -62,11 +62,15 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 		except ValueError:
 			print('Some values missing! (Capacity, tan d ?)')
 	
-	# calc offset current from mean of 2 periods
+	# calc offset current from mean of 1 period
 	if ms['custom_curr_offs'] == 0:
-		start_index = 100
+		
+		# TEST: get start index from first zero transition of current signal
+		index_DataFrame = data.iloc[(data['I']-0.0).abs().argsort()[:20]]	# extract index from nearest values to zero
+		start_index = index_DataFrame.index.min()
+		
 		increment = data.time[1]-data.time[0]
-		steps = int(1./ ms['freq'] / increment * 2)
+		steps = int(1./ ms['freq'] / increment * 1)
 		offset = mean(data.I[start_index:steps+start_index])
 	else:
 		print('... auto offset current disabled')
