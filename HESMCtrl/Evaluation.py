@@ -13,6 +13,15 @@ def get_PR(data):
 	
 	return PR, PR_error
 
+def get_EC(data):
+	"""
+	determines coercive field 
+	"""
+	from numpy import mean
+	EC = mean(abs(data.iloc[(data['P']-0).abs().argsort()[:20]].E))
+	
+	return EC
+
 def calculate_hysteresis(data,ms,filename,mode='measure'):
 	"""
 	Reconstruct hysteresis shape from measured date (time, Vset, Vref)
@@ -105,10 +114,10 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	# calc error of polarization
 	data['P_error'] = (ms['vreferr'] / data.Vref + ms['rreferr']/ms['rref'] + ms['areaerr']/ms['area']) * data.P
 
-	# get PR
-	PR, PR_error = get_PR(data)
-	result['PR'] = PR
-	result['PRerr'] = PR_error
+	# get EC and PR
+	result['PR'], result['PRerr'] = get_PR(data)
+	result['EC'] = get_EC(data)
+	
 	print('... PR: (%f +- %f) yC/cm2'%(abs(PR)*100,abs(PR_error)*100))
 	#print('Vdiff: %f V'%(data.Vdiff.max()))
 	
