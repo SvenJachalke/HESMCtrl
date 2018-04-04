@@ -8,7 +8,7 @@ capacity:		0.0
 tand:			0.0
 
 # Setting for Freq.Gen.
-Amplitude(V):	1.00
+Amplitude(V):	2.00
 Frequency(Hz):	0.1
 Offset(V):	0
 ScopeCyclAver:	3
@@ -19,7 +19,7 @@ Amplification:	500
 
 # Settings for Scope
 ScaleDivider_CHAN1:	AUTO
-ScaleDivider_CHAN2:	1
+ScaleDivider_CHAN2:	10
 
 # PlotSettings
 correct_Ebias:		False
@@ -31,6 +31,6 @@ Rref:		150e3
 RErr:		100
 
 # AdditionalInformations
-Temperature:	298
+Temperature:	373
 Notes:	SAB-Test-Sample
 

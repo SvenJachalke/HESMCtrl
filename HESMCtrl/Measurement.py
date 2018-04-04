@@ -166,7 +166,7 @@ def get_measurement_settings(msfile='meas_settings.txt'):
 			temp = float(line.split(':')[1].strip())
 			meas_settings.update({'temperature':rreferr})
 		elif 'Notes' in line:
-			temp = float(line.split(':')[1].strip())
+			temp = line.split(':')[1].strip()
 			meas_settings.update({'notes':rreferr})
 		
 		
@@ -268,6 +268,7 @@ def measure_hysteresis(filename,ms):
 	SCOPE.set_channel_scale('CHAN2',ms['scale_divider_CHAN2'])
 
 	# start aquisition with scope
+	print_line()
 	print('Data acquisition ...')
 	t_start = clock()
 	
