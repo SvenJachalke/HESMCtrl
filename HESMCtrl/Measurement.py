@@ -64,8 +64,10 @@ def get_measurement_settings(msfile='meas_settings.txt'):
 	- correct_Ebias = aligning the hysteresis around E = 0 (ON/OFF)
 	- correct_LossI = loss current correction from capacity and tand (ON/OFF)
 	- custom_curr_offs = use a custom current offset .. no automatic (float)
-	- Rref = reference resistance (float)
-	- RErr = error of the reference resistance (float)
+	- Rref = reference resistance (float) - Ohm
+	- RErr = error of the reference resistance (float) - Ohm
+	- Temperature = sample temperature (float) - K
+	- Notes = notes from the user (string)
 	"""
 	
 	f = open(msfile,'r')
@@ -160,6 +162,14 @@ def get_measurement_settings(msfile='meas_settings.txt'):
 		elif 'RErr' in line:
 			rreferr = float(line.split(':')[1].strip())
 			meas_settings.update({'rreferr':rreferr})
+		elif 'Temperature' in line:
+			temp = float(line.split(':')[1].strip())
+			meas_settings.update({'temperature':rreferr})
+		elif 'Notes' in line:
+			temp = float(line.split(':')[1].strip())
+			meas_settings.update({'notes':rreferr})
+		
+		
 	
 	# add amplification factor of 1, if not found in old files
 	if 'ampfactor' not in meas_settings.keys():
@@ -231,6 +241,21 @@ def measure_hysteresis(filename,ms):
 	print('... Frequency: %.2f Hz' % ms['freq'])
 	print('... Offset:    %.2f V' % ms['offs'])
 	print_line()
+	
+	# check frequency to determine wheter scope internal averaging or external avaraging has to be used
+	if ms['freq'] <= 1.0:
+		print('... external averaging used')
+		low_f_flag = True
+		# when using low frequencies, internal averaging of the scope is not possible
+		# has to be done manually!!! --> using single trigger measurements (SCOPE.single()) over given average cycles
+	else:
+		print('... scope internal avaraging used')
+		print('... averaging cycles: %i' % ms['average'])
+		low_f_flag = False
+	
+	# is burst enabled?
+	if ms['burst_status'] == True:
+			print('... burst enabled')
 
 	# activate Scope's Channel1 and Channel2 if necessary
 	if 'CHAN1' not in SCOPE.displayed_channels or 'CHAN2' not in SCOPE.displayed_channels:
@@ -241,36 +266,16 @@ def measure_hysteresis(filename,ms):
 	SCOPE.timebase_scale = 1./(ms['freq'])/5		# setting strange ... but deviding by 5 gives approx 3 periods in display
 	SCOPE.set_channel_scale('CHAN1',ms['scale_divider_CHAN1'])		
 	SCOPE.set_channel_scale('CHAN2',ms['scale_divider_CHAN2'])
-	
-	# get eventuell time offset and time base from scope
-	#time_offset = SCOPE.timebase_offset
-	#time_base = SCOPE.timebase_scale
-	
-	# if ms['burst_status'] == True:
-		# SCOPE.timebase_offset = 1e5
-	
-	#SCOPE.memory_depth = 6e6		
-	#set aquisition memory depth to auto (also values, e.g. 6e3 for 6K can be set)
-	#preample = SCOPE.waveform_preamble_dict
 
 	# start aquisition with scope
 	print('Data acquisition ...')
 	t_start = clock()
 	
-	low_f_flag = True						# has to be passed to the function in the end!
-													# when using low frequencies, internal averaging of the scope is not possible
-													# has to be done manually!!! --> using single trigger measurements (SCOPE.single()) over given average cycles
+	# calculate acquisition time for each cycle
+	# set for 3 periods as provided by the timescale (see above)	
+	acquisition_time = 1/ms['freq'] * 3.5	
 	
 	if low_f_flag == True:
-		print('... low freq measurement enabled')
-		if ms['burst_status'] == True:
-			print('... burst enabled')
-		#print('... averaging cycles: %i' % ms['average'])
-		
-		# calculate acquisition time for each cycle
-		# set for 3 periods as provided by the timescale (see above)	
-		acquisition_time = 1/ms['freq'] * 3.5	
-		
 		# init list of all cyclesets
 		cycle_data_sets = []
 		
@@ -336,16 +341,12 @@ def measure_hysteresis(filename,ms):
 		FG.set_offset(ms['offs'])
 
 		# wait until scope has all the data (dpending on frequency)
-		acquire_time = 1/ms['freq'] * 3	#3 periods!
-	#	sleep(2*(ms['average']*2)) 
-		sleep(acquisition_time + (2*ms['average'] * acquisition_time))
-		# sleep(35)
-		# record date
+		
+		sleep(1 + ms['average']*acquisition_time)
+
 		Vset = array(SCOPE.get_waveform_samples('CHAN1',mode='NORM')) * ms['ampfactor']
 		Vref = array(SCOPE.get_waveform_samples('CHAN2',mode='NORM')) 
-		#Vset = array(SCOPE.get_waveform_samples('CHAN1')) * ms['ampfactor']		#save Vset array
-		#Vref = array(SCOPE.get_waveform_samples('CHAN2'))		 	 	 	 	#save Vref array
-		time = array(SCOPE.waveform_time_values)				#save time array
+		time = array(SCOPE.waveform_time_values)
 		#t = t-time_offset
 		
 		# stop acquisition and switch off Freq.Gen.

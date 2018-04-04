@@ -1,14 +1,14 @@
 # Sample
 Name:			PI-PZT-PL08
-ElectrKey:		01
-Area:			1.319e-4
-AErr:			2.944e-7
+ElectrKey:		03
+Area:			1.860e-4
+AErr:			1.247e-7
 thickness:		532e-3
 capacity:		0.0
 tand:			0.0
 
 # Setting for Freq.Gen.
-Amplitude(V):	2.25
+Amplitude(V):	1.00
 Frequency(Hz):	0.1
 Offset(V):	0
 ScopeCyclAver:	3
@@ -19,7 +19,7 @@ Amplification:	500
 
 # Settings for Scope
 ScaleDivider_CHAN1:	AUTO
-ScaleDivider_CHAN2:	10
+ScaleDivider_CHAN2:	1
 
 # PlotSettings
 correct_Ebias:		False
@@ -28,4 +28,9 @@ custom_curr_offs:	0
 
 # ShuntBox
 Rref:		150e3
-RErr:		1000
+RErr:		100
+
+# AdditionalInformations
+Temperature:	298
+Notes:	SAB-Test-Sample
+

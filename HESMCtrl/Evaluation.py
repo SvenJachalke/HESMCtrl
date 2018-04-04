@@ -107,6 +107,7 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 
 	# get PR
 	PR, PR_error = get_PR(data)
+	result['PR'] = PR
 	result['PRerr'] = PR_error
 	print('... PR: (%f +- %f) yC/cm2'%(abs(PR)*100,abs(PR_error)*100))
 	#print('Vdiff: %f V'%(data.Vdiff.max()))
