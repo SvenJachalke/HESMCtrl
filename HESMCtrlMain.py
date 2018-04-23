@@ -8,7 +8,7 @@
 from HESMCtrl.Measurement import *
 from HESMCtrl.Evaluation import *
 
-MODE = 'measure'  		# measure, plot
+MODE = 'plot'  		# measure, plot
 
 
 if MODE == 'measure':

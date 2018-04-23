@@ -115,7 +115,8 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	data['P_error'] = (ms['vreferr'] / data.Vref + ms['rreferr']/ms['rref'] + ms['areaerr']/ms['area']) * data.P
 
 	# get EC and PR
-	result['PR'], result['PRerr'] = get_PR(data)
+	PR, PR_error = get_PR(data)
+	result['PR'], result['PRerr'] = PR, PR_error
 	result['EC'] = get_EC(data)
 	
 	print('... PR: (%f +- %f) yC/cm2'%(abs(PR)*100,abs(PR_error)*100))
@@ -136,7 +137,14 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	return data
 
 def plot_data(data,ms,filename,mode='measure'):
+	use_science_style = False
+	
+	if use_science_style == True:
+		import matplotlib as mpl
+		mpl.style.use('science')
+	
 	import matplotlib.pyplot as plt
+	
 	
 	#colors
 	blue = (0/255.0, 100/255.0, 168/255.0)
@@ -149,7 +157,10 @@ def plot_data(data,ms,filename,mode='measure'):
 	axVset = f.add_subplot(121)
 	axIref = axVset.twinx()	
 	
-	axVset.grid(linestyle='--')
+	if use_science_style == True: 
+		axVset.grid()
+	else:
+		axVset.grid(linestyle='--')
 	
 	# check ax scaling 
 	if data.Vset.max() / 1e6 < 1 and data.Vset.max() / 1e6 > 0.001:
@@ -176,7 +187,10 @@ def plot_data(data,ms,filename,mode='measure'):
 
 	# plot hysteresis
 	axHyst = f.add_subplot(122)
-	axHyst.grid(linestyle='--')
+	if use_science_style == True: 
+		axHyst.grid()
+	else:
+		axHyst.grid(linestyle='--')
 		
 	# check ax scaling 
 	if data.E.max() / 1e6 < 1 and data.E.max() / 1e6 > 0.001:
@@ -194,7 +208,7 @@ def plot_data(data,ms,filename,mode='measure'):
 	axHyst.set_ylabel(r'P ($\mu$C/cm$^2$)')
 	
 	axHyst.plot(E,P,label=r'A: %.2f V, f: %.3f Hz'%(ms['amp']*ms['ampfactor'],ms['freq']),color=blue)
-	axHyst.legend()
+	axHyst.legend(loc=2)
 	
 	# layout
 	f.tight_layout()
