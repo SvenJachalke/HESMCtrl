@@ -75,11 +75,13 @@ def calculate_hysteresis(data,ms,filename):
 	if ms['custom_curr_offs'] == 0:
 		
 		# TEST: get start index from first zero transition of current signal
-		index_DataFrame = data.iloc[(data['I']-0.0).abs().argsort()[:20]]	# extract index from nearest values to zero
-		start_index = index_DataFrame.index.min()
+		# index_DataFrame = data.iloc[(data['I']-0.0).abs().argsort()[:20]]	# extract index from nearest values to zero
+		# start_index = index_DataFrame.index.min()
+		
+		start_index = 50
 		
 		increment = data.time[1]-data.time[0]
-		steps = int(1./ ms['freq'] / increment * 1)
+		steps = int(1./ ms['freq'] / increment * 2)
 		offset = mean(data.I[start_index:steps+start_index])
 	else:
 		print('... auto offset current disabled')
