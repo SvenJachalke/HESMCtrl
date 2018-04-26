@@ -9,8 +9,9 @@ from HESMCtrl.Measurement import *
 from HESMCtrl.Evaluation import *
 from HESMCtrl.OSOperations import save_all
 
+import sys
 MODE = 'plot'  		# measure, plot
-
+python_version = int(sys.version[0])
 
 if MODE == 'measure':
 	date_time = get_date_time()
@@ -18,11 +19,15 @@ if MODE == 'measure':
 	filename = create_filename(date_time,ms)
 	
 	data = measure_hysteresis(filename,ms)
-	data, result = calculate_hysteresis(data,ms,filename,mode=MODE)
+	data, result = calculate_hysteresis(data,ms,filename)
 	
 	fig = plot_data(data,ms,filename)
+		
+	if python_version==2:
+		answer = raw_input('... Save? [y/n]')
+	elif python_version==3:
+		answer = input('... Save? [y/n]')
 	
-	answer = input('... Save? [y/n]')
 	if answer == 'y' or answer == 'yes':
 		save_all(data, result, fig, filename, mode=MODE)
 	else:
@@ -44,8 +49,11 @@ elif MODE == 'plot':
 		fig = plot_data(data,ms,filename)
 		
 		save_all(data, result, fig, filename, mode=MODE)
+		if python_version == 2:
+			raw_input('Press any key!')
+		elif python_version == 3:
+			inptu('Press any key!')
 	except IndexError:
 		print('No .pd file found!')
 
 	
-#input('Press any key!')

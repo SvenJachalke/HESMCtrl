@@ -132,7 +132,7 @@ def plot_data(data,ms,filename):
 		mpl.style.use('science')
 	
 	import matplotlib.pyplot as plt
-	
+	plt.ion()
 
 	#colors
 	blue = (0/255.0, 100/255.0, 168/255.0)
