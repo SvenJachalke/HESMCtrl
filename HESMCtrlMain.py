@@ -7,6 +7,7 @@
 
 from HESMCtrl.Measurement import *
 from HESMCtrl.Evaluation import *
+from HESMCtrl.OSOperations import save_all
 
 MODE = 'plot'  		# measure, plot
 
@@ -17,9 +18,15 @@ if MODE == 'measure':
 	filename = create_filename(date_time,ms)
 	
 	data = measure_hysteresis(filename,ms)
-	data = calculate_hysteresis(data,ms,filename,mode=MODE)
+	data, result = calculate_hysteresis(data,ms,filename,mode=MODE)
 	
-	plot_data(data,ms,filename)
+	fig = plot_data(data,ms,filename)
+	
+	answer = input('... Save? [y/n]')
+	if answer == 'y' or answer == 'yes':
+		save_all(data, result, fig, filename, mode=MODE)
+	else:
+		pass
 	
 elif MODE == 'plot':
 	import pandas as pd
@@ -33,10 +40,12 @@ elif MODE == 'plot':
 		data = pd.read_pickle(datafile)
 		filename = datafile.strip('_data.pd')
 	
-		data = calculate_hysteresis(data,ms,filename,mode=MODE)
-		plot_data(data,ms,filename,mode=MODE)
+		data, result = calculate_hysteresis(data,ms,filename)
+		fig = plot_data(data,ms,filename)
+		
+		save_all(data, result, fig, filename, mode=MODE)
 	except IndexError:
 		print('No .pd file found!')
 
-
+	
 #input('Press any key!')

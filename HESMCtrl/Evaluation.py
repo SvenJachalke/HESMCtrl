@@ -22,7 +22,7 @@ def get_EC(data):
 	
 	return EC
 
-def calculate_hysteresis(data,ms,filename,mode='measure'):
+def calculate_hysteresis(data,ms,filename):
 	"""
 	Reconstruct hysteresis shape from measured date (time, Vset, Vref)
 	and measurement settings dict
@@ -122,21 +122,9 @@ def calculate_hysteresis(data,ms,filename,mode='measure'):
 	print('... PR: (%f +- %f) yC/cm2'%(abs(PR)*100,abs(PR_error)*100))
 	#print('Vdiff: %f V'%(data.Vdiff.max()))
 	
-	# save data and results
-	if mode == 'measure':
-		path = 'Data/'+filename+'/'
-		print('... log files written!')
-	elif mode == 'plot':
-		path = ''
-		
-	data.to_csv(path+filename+'_data.txt')
-	data.to_pickle(path+filename+'_data.pd')
+	return data, result
 
-	result.to_csv(path+filename+'_results.txt')
-	
-	return data
-
-def plot_data(data,ms,filename,mode='measure'):
+def plot_data(data,ms,filename):
 	use_science_style = False
 	
 	if use_science_style == True:
@@ -145,7 +133,7 @@ def plot_data(data,ms,filename,mode='measure'):
 	
 	import matplotlib.pyplot as plt
 	
-	
+
 	#colors
 	blue = (0/255.0, 100/255.0, 168/255.0)
 	red = (181/255.0, 18/255.0, 62/255.0)
@@ -212,15 +200,6 @@ def plot_data(data,ms,filename,mode='measure'):
 	
 	# layout
 	f.tight_layout()
-
-	# saving
-	if mode == 'measure':
-		print('... saving plot')
-		f.savefig('Data/'+filename+'/'+filename+'_plot.pdf')
-	elif mode == 'plot':
-		f.savefig(filename+'_plot.pdf')
-		
-	# show()
 	plt.show()
-
 	
+	return f

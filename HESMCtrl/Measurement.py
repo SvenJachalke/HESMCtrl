@@ -211,9 +211,7 @@ def measure_hysteresis(filename,ms):
 	from HESMCtrl.DS1054ZCtrl import DS1054Z
 	from HESMCtrl.HP33120ACtrl import HP33120A
 	from time import clock, sleep
-	from os import mkdir
 	import sys
-	from shutil import copy2
 	from numpy import array
 	from pandas import DataFrame
 	
@@ -360,10 +358,5 @@ def measure_hysteresis(filename,ms):
 		t_end = clock()
 		print('... finished acquisition; time: %.2f s' % (t_end-t_start))
 		print_line()
-	
-	
-	# copy settings file (logs will be writen after evaluation)
-	mkdir('Data/%s'%filename)
-	copy2('meas_settings.txt','Data/'+filename+'/'+filename+'_settings.txt')
 	
 	return data
