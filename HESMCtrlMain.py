@@ -52,7 +52,7 @@ elif MODE == 'plot':
 		if python_version == 2:
 			raw_input('Press any key!')
 		elif python_version == 3:
-			inptu('Press any key!')
+			input('Press any key!')
 	except IndexError:
 		print('No .pd file found!')
 

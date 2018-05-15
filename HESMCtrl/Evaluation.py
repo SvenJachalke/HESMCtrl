@@ -116,12 +116,12 @@ def calculate_hysteresis(data,ms,filename):
 	# calc error of polarization
 	data['P_error'] = (ms['vreferr'] / data.Vref + ms['rreferr']/ms['rref'] + ms['areaerr']/ms['area']) * data.P
 
-	# get EC and PR
+	# get EC and PR --> 3 sigma
 	PR, PR_error = get_PR(data)
-	result['PR'], result['PRerr'] = PR, PR_error
+	result['PR'], result['PRerr'] = PR, 3*PR_error
 	result['EC'] = get_EC(data)
 	
-	print('... PR: (%f +- %f) yC/cm2'%(abs(PR)*100,abs(PR_error)*100))
+	print('... PR: (%f +- %f) yC/cm2'%(abs(result['PR'])*100,abs(result['PRerr'])*100))
 	#print('Vdiff: %f V'%(data.Vdiff.max()))
 	
 	return data, result
