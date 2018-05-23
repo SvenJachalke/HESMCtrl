@@ -3,15 +3,17 @@
 """
 Evaluate data to reconstruct ferroelectric hysteresis
 """
-def get_PR(data):
+def get_PR(data, include_instr_err=False):
 	"""
 	calculates remanent polarization and error
+	option to include instrumental error of approx. 11%
 	"""
 	from numpy import mean, std
 	PRs = abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P)
 	PR = mean(PRs)		 	 	# mean of 20 values close to E=0
 	PR_error = std(PRs)	 	 	# 1sigma of theses values = statistical error
-	PR_error = PR_error + PR*0.11	# add instrument error of approx 11% (see error formula)
+	if include_instr_err == True:
+		PR_error = PR_error + PR*0.11	# add instrument error of approx 11% (see error formula)
 	
 #	PR = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P))		#mean of 20 values close to E=0
 #	PR_error = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P_error))
