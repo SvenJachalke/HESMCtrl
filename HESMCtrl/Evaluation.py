@@ -7,9 +7,14 @@ def get_PR(data):
 	"""
 	calculates remanent polarization and error
 	"""
-	from numpy import mean
-	PR = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P))		#mean of 20 values close to E=0
-	PR_error = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P_error))
+	from numpy import mean, std
+	PRs = abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P)
+	PR = mean(PRs)		 	 	# mean of 20 values close to E=0
+	PR_error = std(PRs)	 	 	# 1sigma of theses values = statistical error
+	PR_error = PR_error + PR*0.11	# add instrument error of approx 11% (see error formula)
+	
+#	PR = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P))		#mean of 20 values close to E=0
+#	PR_error = mean(abs(data.iloc[(data['E']-0).abs().argsort()[:20]].P_error))
 	
 	return PR, PR_error
 
@@ -105,7 +110,7 @@ def calculate_hysteresis(data,ms,filename):
 	Pdiff = abs(minP)-abs(maxP)
 	data['P'] = data.P + Pdiff/2
 		
-	# aling P around 0		16 because 4+ und 4-
+	# aling P around 0		16 because 8+ und 8-
 	PNull = mean([max(data.iloc[(data['E']-0).abs().argsort()[:16]].P),min(data.iloc[(data['E']-0).abs().argsort()[:16]].P)])
 	if PNull < 0:
 		data['P'] = data.P + abs(PNull)
@@ -118,10 +123,11 @@ def calculate_hysteresis(data,ms,filename):
 
 	# get EC and PR --> 3 sigma
 	PR, PR_error = get_PR(data)
-	result['PR'], result['PRerr'] = PR, 3*PR_error
+	result['PR'], result['PRerr'] = PR, PR_error
 	result['EC'] = get_EC(data)
 	
 	print('... PR: (%f +- %f) yC/cm2'%(abs(result['PR'])*100,abs(result['PRerr'])*100))
+#	print('...     (%.2f)'%(PR_error/PR*100))
 	#print('Vdiff: %f V'%(data.Vdiff.max()))
 	
 	return data, result
